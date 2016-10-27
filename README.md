@@ -1,4 +1,4 @@
-# horofree
+# Horofree
 Horodateur pour freelance
 
 ## Lancer le projet
