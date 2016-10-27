@@ -7,7 +7,7 @@ You need to install Elm on your computer, follow the instructions here: https://
 Then
 
 ```bash
-$ npm install && elm-package install
+$ npm install
 ```
 
 Answer yes when prompt by `elm-package`
@@ -15,3 +15,9 @@ Answer yes when prompt by `elm-package`
 ```
 $ npm run dev
 ```
+
+## Roadmap
+- [ ] Round income to 2 decimals
+- [ ] Use elm-css
+- [ ] Add several stopwatches
+- [ ] Use localstorage
