@@ -1,7 +1,7 @@
 # Horofree
-Horodateur pour freelance
+Stopwatch for freelancers
 
-## Lancer le projet
+## Run the application
 ```bash
 $ npm install && elm-package install
 ```
