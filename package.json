@@ -17,6 +17,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "postinstall": "elm-package install -y",
     "build": "webpack",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --port 3000"
