@@ -15,9 +15,11 @@
     "webpack-dev-middleware": "1.8.4",
     "webpack-dev-server": "1.16.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "elm-css-webpack-loader": "2.0.2"
+  },
   "scripts": {
-    "postinstall": "elm-package install -y",
+    "postinstall": "elm-package install -y && elm-css -o client/ client/Stylesheets.elm",
     "build": "webpack",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --port 3000"
