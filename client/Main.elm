@@ -97,7 +97,6 @@ view model =
             ]
         , div [ class [ Stopwatch ] ] [ text (toStopwatch model.time) ]
         , div [ class [ Income ] ] [ text ((toString (roundTo 2 (model.income))) ++ model.currency) ]
-          -- , div [] [ text (toString model) ]
         , div [ class [ BtnContainer ] ]
             [ button [ class [ "btn", "btn-outline", "mx1" ], onClick Start, disabled (model.rate == 0 || model.hasStarted) ] [ i [ class [ "fa", "fa-play" ] ] [] ]
             , button [ class [ "btn", "btn-outline", "mx1" ], onClick Pause, disabled (model.rate == 0 || model.hasPaused || not model.hasStarted) ] [ i [ class [ "fa", "fa-pause" ] ] [] ]
