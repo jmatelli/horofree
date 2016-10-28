@@ -7,6 +7,7 @@ import Html.App
 import String exposing (..)
 import Time exposing (..)
 import Json.Decode as Json
+import Exts.Float exposing (roundTo)
 
 
 -- Model
@@ -16,7 +17,7 @@ type alias Model =
     { time : Float
     , rate : Float
     , rateType : RateType
-    , money : Float
+    , income : Float
     , currency : String
     , nbHours : Float
     , hasStarted : Bool
@@ -35,7 +36,7 @@ initialModel =
     { time = 0
     , rate = 0
     , rateType = PerDays
-    , money = 0
+    , income = 0
     , currency = "€"
     , nbHours = 7
     , hasStarted = False
@@ -73,7 +74,8 @@ mainStyle : Attribute msg
 mainStyle =
     style
         [ ( "height", "100%" )
-        , ( "background", "#f5f5f5" )
+        , ( "background", "#2980b9" )
+        , ( "color", "#ecf0f1" )
         , ( "padding-top", "150px" )
         ]
 
@@ -81,11 +83,8 @@ mainStyle =
 headerStyle : Attribute msg
 headerStyle =
     style
-        [ ( "background", "#353535" )
-        , ( "border-bottom", "1px solid black" )
-        , ( "margin", "0 0 20px" )
+        [ ( "margin", "0 0 20px" )
         , ( "padding", "20px" )
-        , ( "color", "white" )
         ]
 
 
@@ -94,6 +93,9 @@ h1Style =
     style
         [ ( "margin", "0" )
         , ( "text-align", "center" )
+        , ( "font-family", "'Pacifico', cursive" )
+        , ( "font-size", "4em" )
+        , ( "font-weight", "normal" )
         ]
 
 
@@ -115,7 +117,8 @@ inputStyle =
     style
         [ ( "padding", "10px 20px" )
         , ( "border-radius", "0" )
-        , ( "border", "1px solid grey" )
+        , ( "border", "1px solid #2c3e50" )
+        , ( "border-radius", "4px 0 0 4px" )
         , ( "line-height", "50px" )
         , ( "height", "52px" )
         ]
@@ -124,9 +127,11 @@ inputStyle =
 spanInputStyle : Attribute msg
 spanInputStyle =
     style
-        [ ( "background", "lightgrey" )
-        , ( "border", "1px solid grey" )
+        [ ( "background", "#34495e" )
+        , ( "color", "#ecf0f1" )
+        , ( "border", "1px solid #2c3e50" )
         , ( "border-left", "none" )
+        , ( "border-radius", "0 4px 4px 0" )
         , ( "font-weight", "bold" )
         , ( "line-height", "50px" )
         , ( "height", "52px" )
@@ -146,14 +151,14 @@ stopwatchStyle =
         ]
 
 
-moneyStyle : Attribute msg
-moneyStyle =
+incomeStyle : Attribute msg
+incomeStyle =
     style
-        [ ( "font-size", "5rem" )
-        , ( "background", "#DCDCDC" )
+        [ ( "font-size", "10rem" )
+        , ( "background", "#3498db" )
         , ( "margin", "50px 0" )
         , ( "font-weight", "bold" )
-        , ( "color", "limegreen" )
+        , ( "color", "#c0392b" )
         , ( "text-align", "center" )
         ]
 
@@ -185,7 +190,7 @@ view model =
                 ]
             ]
         , div [ stopwatchStyle ] [ text (toStopwatch model.time) ]
-        , div [ moneyStyle ] [ text ((toString model.money) ++ model.currency) ]
+        , div [ incomeStyle ] [ text ((toString (roundTo 2 (model.income))) ++ model.currency) ]
           -- , div [] [ text (toString model) ]
         , div [ btnContainerStyle ]
             [ button [ class "btn btn-outline mx1", onClick Start, disabled (model.rate == 0 || model.hasStarted) ] [ i [ class "fa fa-play" ] [] ]
@@ -229,7 +234,7 @@ update msg model =
         UpdateStopwatch time ->
             ( { model
                 | time = model.time + 1
-                , money = updateMoney model.rate model.time model.nbHours model.rateType
+                , income = updateIncome model.rate model.time model.nbHours model.rateType
               }
             , Cmd.none
             )
@@ -238,7 +243,7 @@ update msg model =
             ( { model
                 | rate = String.toFloat newValue |> Result.toMaybe |> Maybe.withDefault 0
                 , time = 0
-                , money = 0
+                , income = 0
               }
             , Cmd.none
             )
@@ -253,7 +258,7 @@ update msg model =
             ( { model
                 | nbHours = String.toFloat newValue |> Result.toMaybe |> Maybe.withDefault 0
                 , time = 0
-                , money = 0
+                , income = 0
               }
             , Cmd.none
             )
@@ -282,7 +287,7 @@ update msg model =
         Stop ->
             ( { model
                 | time = 0
-                , money = 0
+                , income = 0
                 , hasStarted = False
                 , hasPaused = False
                 , hasStopped = True
@@ -310,8 +315,8 @@ subscriptions model =
 -- Functions
 
 
-updateMoney : Float -> Float -> Float -> RateType -> Float
-updateMoney rate time nbHours rateType =
+updateIncome : Float -> Float -> Float -> RateType -> Float
+updateIncome rate time nbHours rateType =
     if rateType == PerDays then
         (rate / nbHours) / 3600 * time
     else
