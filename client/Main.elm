@@ -4,10 +4,17 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App
+import Html.CssHelpers exposing (withNamespace)
 import String exposing (..)
 import Time exposing (..)
 import Json.Decode as Json
 import Exts.Float exposing (roundTo)
+import Styles exposing (..)
+
+
+{ id, class, classList } =
+    withNamespace ""
+
 
 
 -- Model
@@ -70,132 +77,31 @@ type Msg
 -- View
 
 
-mainStyle : Attribute msg
-mainStyle =
-    style
-        [ ( "height", "100%" )
-        , ( "background", "#2980b9" )
-        , ( "color", "#ecf0f1" )
-        , ( "padding-top", "150px" )
-        ]
-
-
-headerStyle : Attribute msg
-headerStyle =
-    style
-        [ ( "margin", "0 0 20px" )
-        , ( "padding", "20px" )
-        ]
-
-
-h1Style : Attribute msg
-h1Style =
-    style
-        [ ( "margin", "0" )
-        , ( "text-align", "center" )
-        , ( "font-family", "'Pacifico', cursive" )
-        , ( "font-size", "4em" )
-        , ( "font-weight", "normal" )
-        ]
-
-
-formStyle : Attribute msg
-formStyle =
-    style
-        [ ( "text-align", "center" )
-        ]
-
-
-inputBlockStyle : Attribute msg
-inputBlockStyle =
-    style
-        [ ( "margin-bottom", "20px" ) ]
-
-
-inputStyle : Attribute msg
-inputStyle =
-    style
-        [ ( "padding", "10px 20px" )
-        , ( "border-radius", "0" )
-        , ( "border", "1px solid #2c3e50" )
-        , ( "border-radius", "4px 0 0 4px" )
-        , ( "line-height", "50px" )
-        , ( "height", "52px" )
-        ]
-
-
-spanInputStyle : Attribute msg
-spanInputStyle =
-    style
-        [ ( "background", "#34495e" )
-        , ( "color", "#ecf0f1" )
-        , ( "border", "1px solid #2c3e50" )
-        , ( "border-left", "none" )
-        , ( "border-radius", "0 4px 4px 0" )
-        , ( "font-weight", "bold" )
-        , ( "line-height", "50px" )
-        , ( "height", "52px" )
-        , ( "width", "50px" )
-        , ( "text-align", "center" )
-        , ( "display", "inline-block" )
-        ]
-
-
-stopwatchStyle : Attribute msg
-stopwatchStyle =
-    style
-        [ ( "font-size", "3rem" )
-        , ( "font-weight", "bold" )
-        , ( "text-align", "center" )
-        , ( "margin", "50px 0" )
-        ]
-
-
-incomeStyle : Attribute msg
-incomeStyle =
-    style
-        [ ( "font-size", "10rem" )
-        , ( "background", "#3498db" )
-        , ( "margin", "50px 0" )
-        , ( "font-weight", "bold" )
-        , ( "color", "#c0392b" )
-        , ( "text-align", "center" )
-        ]
-
-
-btnContainerStyle : Attribute msg
-btnContainerStyle =
-    style
-        [ ( "text-align", "center" )
-        ]
-
-
 view : Model -> Html Msg
 view model =
-    main' [ mainStyle ]
-        [ header [ headerStyle, class "fixed top-0 left-0 right-0" ] [ h1 [ h1Style ] [ text "Horofree" ] ]
-        , div [ formStyle ]
-            [ div [ inputBlockStyle ]
-                [ input [ inputStyle, type' "text", onInput UpdateRate, placeholder "Your daily/hourly rate" ] []
-                  -- , span [ spanInputStyle ] [ text "€" ]
+    main' []
+        [ header [ class [ Header ] ] [ h1 [] [ text "Horofree" ] ]
+        , div [ class [ Setup ] ]
+            [ div []
+                [ input [ class [ InputText ], type' "text", onInput UpdateRate, placeholder "Your daily/hourly rate" ] []
                 , selectCurrency model
                 ]
-            , div [ inputBlockStyle ]
-                [ input [ inputStyle, type' "text", onInput UpdateNbHours, value (toString model.nbHours), placeholder "Number of hours per day" ] []
-                , span [ spanInputStyle ] [ text "H" ]
+            , div []
+                [ input [ class [ InputText ], type' "text", onInput UpdateNbHours, value (toString model.nbHours), placeholder "Number of hours per day" ] []
+                , span [ class [ SpanInput ] ] [ text "H" ]
                 ]
-            , div [ inputBlockStyle ]
+            , div []
                 [ radio "Per days" PerDays (UpdateRateType PerDays) model
                 , radio "Per hours" PerHours (UpdateRateType PerHours) model
                 ]
             ]
-        , div [ stopwatchStyle ] [ text (toStopwatch model.time) ]
-        , div [ incomeStyle ] [ text ((toString (roundTo 2 (model.income))) ++ model.currency) ]
+        , div [ class [ Stopwatch ] ] [ text (toStopwatch model.time) ]
+        , div [ class [ Income ] ] [ text ((toString (roundTo 2 (model.income))) ++ model.currency) ]
           -- , div [] [ text (toString model) ]
-        , div [ btnContainerStyle ]
-            [ button [ class "btn btn-outline mx1", onClick Start, disabled (model.rate == 0 || model.hasStarted) ] [ i [ class "fa fa-play" ] [] ]
-            , button [ class "btn btn-outline mx1", onClick Pause, disabled (model.rate == 0 || model.hasPaused || not model.hasStarted) ] [ i [ class "fa fa-pause" ] [] ]
-            , button [ class "btn btn-outline mx1", onClick Stop, disabled (model.rate == 0 || model.hasStopped) ] [ i [ class "fa fa-stop" ] [] ]
+        , div [ class [ BtnContainer ] ]
+            [ button [ class [ "btn", "btn-outline", "mx1" ], onClick Start, disabled (model.rate == 0 || model.hasStarted) ] [ i [ class [ "fa", "fa-play" ] ] [] ]
+            , button [ class [ "btn", "btn-outline", "mx1" ], onClick Pause, disabled (model.rate == 0 || model.hasPaused || not model.hasStarted) ] [ i [ class [ "fa", "fa-pause" ] ] [] ]
+            , button [ class [ "btn", "btn-outline", "mx1" ], onClick Stop, disabled (model.rate == 0 || model.hasStopped) ] [ i [ class [ "fa", "fa-stop" ] ] [] ]
             ]
         ]
 
@@ -215,7 +121,7 @@ currencies =
 
 selectCurrency : Model -> Html Msg
 selectCurrency model =
-    select [ spanInputStyle, on "change" (Json.map UpdateCurrency targetValue) ]
+    select [ class [ SpanInput ], on "change" (Json.map UpdateCurrency targetValue) ]
         (List.map (currencyItem model) currencies)
 
 
