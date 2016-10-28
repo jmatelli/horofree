@@ -17,7 +17,7 @@ $ npm run dev
 ```
 
 ## Roadmap
-- [ ] Round income to 2 decimals
+- [x] Round income to 2 decimals
 - [ ] Use elm-css
 - [ ] Add several stopwatches
 - [ ] Use localstorage
