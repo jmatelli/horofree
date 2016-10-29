@@ -27,3 +27,4 @@ $ npm run dev
 - [x] Use elm-css
 - [ ] Add several stopwatches
 - [ ] Use localstorage
+- [ ] Global settings
