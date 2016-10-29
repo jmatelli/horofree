@@ -14,12 +14,32 @@ type CssClasses
     | BtnContainer
 
 
+teal : Color
+teal =
+    hex "009688"
+
+
+teal700 : Color
+teal700 =
+    hex "00796B"
+
+
+teal900 : Color
+teal900 =
+    hex "004D40"
+
+
+grey900 : Color
+grey900 =
+    hex "212121"
+
+
 css : Stylesheet
 css =
     stylesheet
         [ body
             [ height (vh 100)
-            , backgroundColor (hex "2980b9")
+            , backgroundColor teal700
             , color (hex "ecf0f1")
             ]
         , (.) Header
@@ -43,17 +63,17 @@ css =
                 , (.) InputText
                     [ padding2 (px 10) (px 20)
                     , border zero
-                    , borderBottom3 (px 2) solid (hex "2c3e50")
+                    , borderBottom3 (px 2) solid teal900
                     , backgroundColor transparent
                     , color (hex "FFF")
                     , lineHeight (px 50)
                     , height (px 52)
                     ]
                 , (.) SpanInput
-                    [ backgroundColor (hex "3498db")
+                    [ backgroundColor teal
                     , color (hex "ecf0f1")
                     , border zero
-                    , borderBottom3 (px 2) solid (hex "2c3e50")
+                    , borderBottom3 (px 2) solid teal900
                     , fontWeight bold
                     , lineHeight (px 50)
                     , height (px 52)
@@ -71,10 +91,10 @@ css =
             ]
         , (.) Income
             [ fontSize (Css.rem 10)
-            , backgroundColor (hex "3498db")
+            , backgroundColor teal
             , margin2 (px 50) zero
             , fontWeight bold
-            , color (hex "c0392b")
+            , color grey900
             , textAlign center
             ]
         , (.) BtnContainer
