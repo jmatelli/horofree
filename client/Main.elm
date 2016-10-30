@@ -24,11 +24,7 @@ import Styles exposing (..)
 type alias Stopwatch =
     ( Int
     , { time : Float
-      , rate : Float
-      , rateType : RateType
       , income : Float
-      , currency : String
-      , nbHours : Float
       , hasStarted : Bool
       , hasPaused : Bool
       , hasStopped : Bool
@@ -45,6 +41,11 @@ type alias Model =
     { stopwatch : Stopwatch
     , stopwatches : List Stopwatch
     , listOpened : Bool
+    , setupOpened : Bool
+    , rate : Float
+    , rateType : RateType
+    , currency : String
+    , nbHours : Float
     }
 
 
@@ -52,11 +53,7 @@ initialStopwatch : Stopwatch
 initialStopwatch =
     ( 1
     , { time = 0
-      , rate = 0
-      , rateType = PerDays
       , income = 0
-      , currency = "€"
-      , nbHours = 7
       , hasStarted = False
       , hasPaused = False
       , hasStopped = True
@@ -69,6 +66,11 @@ initialModel =
     { stopwatch = initialStopwatch
     , stopwatches = [ initialStopwatch ]
     , listOpened = False
+    , setupOpened = False
+    , rate = 0
+    , rateType = PerDays
+    , currency = "€"
+    , nbHours = 7
     }
 
 
@@ -87,6 +89,8 @@ type Msg
     | ChangeStopwatch
     | OpenList
     | CloseList
+    | OpenSetup
+    | CloseSetup
     | UpdateStopwatch Time
     | UpdateRate String
     | UpdateRateType RateType
@@ -116,6 +120,18 @@ view model =
                 [ Styles.OpenList ]
             else
                 [ Styles.OpenList, Hidden ]
+
+        closeSetupBtnClass =
+            if model.setupOpened then
+                [ Styles.CloseSetup ]
+            else
+                [ Styles.CloseSetup, Hidden ]
+
+        openSetupBtnClass =
+            if not model.setupOpened then
+                [ Styles.OpenSetup ]
+            else
+                [ Styles.OpenSetup, Hidden ]
     in
         main' []
             [ header [ class [ Header ] ]
@@ -123,27 +139,30 @@ view model =
                 , a [ class closeBtnClass, onClick CloseList ] [ i [ class [ "fa", "fa-times" ] ] [] ]
                 , a [ class openBtnClass, onClick OpenList ] [ i [ class [ "fa", "fa-arrow-right" ] ] [] ]
                 , h1 [] [ text "Horofree" ]
+                , a [ class closeSetupBtnClass, style [ ( "z-index", "1020" ) ], onClick CloseSetup ] [ i [ class [ "fa", "fa-times" ] ] [] ]
+                , a [ class openSetupBtnClass, onClick OpenSetup ] [ i [ class [ "fa", "fa-gear" ] ] [] ]
                 ]
-            , listStopwatchesView model.stopwatches model.listOpened
-            , stopwatchView model.stopwatch
+            , listStopwatchesView model
+            , stopwatchView model model.stopwatch
+            , setupView model
             ]
 
 
-listStopwatchesView : List Stopwatch -> Bool -> Html Msg
-listStopwatchesView stopwatches isOpen =
+listStopwatchesView : Model -> Html Msg
+listStopwatchesView model =
     let
         listClass =
-            if isOpen then
+            if model.listOpened then
                 [ ListStopwatches, ListOpened ]
             else
                 [ ListStopwatches, ListClosed ]
     in
         div [ class listClass ]
-            (List.map listItem stopwatches)
+            (List.map (listItem model) model.stopwatches)
 
 
-listItem : Stopwatch -> Html Msg
-listItem stopwatch =
+listItem : Model -> Stopwatch -> Html Msg
+listItem model stopwatch =
     let
         ( id, sw ) =
             stopwatch
@@ -154,7 +173,7 @@ listItem stopwatch =
                 , span []
                     [ text (toStopwatch sw.time)
                     , br [] []
-                    , text ((toString (roundTo 2 (sw.income))) ++ sw.currency)
+                    , text ((toString (roundTo 2 (sw.income))) ++ model.currency)
                     ]
                 ]
             , a
@@ -165,71 +184,49 @@ listItem stopwatch =
             ]
 
 
-stopwatchView : Stopwatch -> Html Msg
-stopwatchView stopwatch =
+setupView : Model -> Html Msg
+setupView model =
     let
-        ( id, sw ) =
-            stopwatch
+        setupClass =
+            if model.setupOpened then
+                [ Setup ]
+            else
+                [ Setup, Hidden ]
     in
-        div []
-            [ div [ class [ Setup ] ]
+        div [ class setupClass, style [ ( "z-index", "1010" ) ] ]
+            [ div [ class [ SetupContainer ] ]
                 [ div []
                     [ label [ class [ LabelSetup ] ] [ text "Your daily/hourly rate" ]
                     , div []
                         [ input [ class [ InputText ], type' "text", onInput UpdateRate ] []
-                        , selectCurrency stopwatch
+                        , selectCurrency model
                         ]
                     ]
                 , div []
                     [ label [ class [ LabelSetup ] ] [ text "Number of hours per day" ]
                     , div []
-                        [ input [ class [ InputText, InputHours ], type' "text", onInput UpdateNbHours, value (toString sw.nbHours), placeholder "Number of hours per day" ] []
+                        [ input [ class [ InputText, InputHours ], type' "text", onInput UpdateNbHours, value (toString model.nbHours), placeholder "Number of hours per day" ] []
                         ]
                     ]
                 , div []
-                    [ radio "Per days" PerDays (UpdateRateType PerDays) stopwatch
-                    , radio "Per hours" PerHours (UpdateRateType PerHours) stopwatch
+                    [ radio "Per days" PerDays (UpdateRateType PerDays) model
+                    , radio "Per hours" PerHours (UpdateRateType PerHours) model
                     ]
-                ]
-            , div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
-            , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ sw.currency) ]
-            , div [ class [ BtnContainer ] ]
-                [ button
-                    [ class [ "btn", "btn-outline", "mx1" ]
-                    , onClick Start
-                    , disabled (sw.rate == 0 || sw.hasStarted)
-                    ]
-                    [ i [ class [ "fa", "fa-play" ] ] [] ]
-                , button
-                    [ class [ "btn", "btn-outline", "mx1" ]
-                    , onClick Pause
-                    , disabled (sw.rate == 0 || sw.hasPaused || not sw.hasStarted)
-                    ]
-                    [ i [ class [ "fa", "fa-pause" ] ] [] ]
-                , button
-                    [ class [ "btn", "btn-outline", "mx1" ]
-                    , onClick Stop
-                    , disabled (sw.rate == 0 || sw.hasStopped)
-                    ]
-                    [ i [ class [ "fa", "fa-stop" ] ] [] ]
                 ]
             ]
 
 
-radio : String -> RateType -> msg -> Stopwatch -> Html msg
-radio value rateType msg stopwatch =
+radio : String -> RateType -> msg -> Model -> Html msg
+radio value rateType msg model =
     let
-        ( id, sw ) =
-            stopwatch
-
         labelClass =
-            if sw.rateType == rateType then
+            if model.rateType == rateType then
                 [ Styles.RateType, RateTypeSelected ]
             else
                 [ Styles.RateType ]
     in
         label [ class labelClass ]
-            [ input [ type' "radio", name "rate-type", onClick msg, checked (sw.rateType == rateType) ] []
+            [ input [ type' "radio", name "rate-type", onClick msg, checked (model.rateType == rateType) ] []
             , text value
             ]
 
@@ -239,19 +236,47 @@ currencies =
     [ "€", "$", "£", "¥", "฿" ]
 
 
-selectCurrency : Stopwatch -> Html Msg
-selectCurrency stopwatch =
+selectCurrency : Model -> Html Msg
+selectCurrency model =
     select [ class [ SpanInput ], on "change" (Json.map UpdateCurrency targetValue) ]
-        (List.map (currencyItem stopwatch) currencies)
+        (List.map (currencyItem model) currencies)
 
 
-currencyItem : Stopwatch -> String -> Html msg
-currencyItem stopwatch currency =
+currencyItem : Model -> String -> Html msg
+currencyItem model currency =
+    option [ selected (model.currency == currency), value currency ] [ text currency ]
+
+
+stopwatchView : Model -> Stopwatch -> Html Msg
+stopwatchView model stopwatch =
     let
         ( id, sw ) =
             stopwatch
     in
-        option [ selected (sw.currency == currency), value currency ] [ text currency ]
+        div []
+            [ div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
+            , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ model.currency) ]
+            , div [ class [ BtnContainer ] ]
+                [ button
+                    [ class [ "btn", "btn-outline", "mx1" ]
+                    , onClick Start
+                    , disabled (model.rate == 0 || sw.hasStarted)
+                    ]
+                    [ i [ class [ "fa", "fa-play" ] ] [] ]
+                , button
+                    [ class [ "btn", "btn-outline", "mx1" ]
+                    , onClick Pause
+                    , disabled (model.rate == 0 || sw.hasPaused || not sw.hasStarted)
+                    ]
+                    [ i [ class [ "fa", "fa-pause" ] ] [] ]
+                , button
+                    [ class [ "btn", "btn-outline", "mx1" ]
+                    , onClick Stop
+                    , disabled (model.rate == 0 || sw.hasStopped)
+                    ]
+                    [ i [ class [ "fa", "fa-stop" ] ] [] ]
+                ]
+            ]
 
 
 
@@ -300,6 +325,12 @@ update msg model =
         CloseList ->
             ( { model | listOpened = False }, Cmd.none )
 
+        OpenSetup ->
+            ( { model | setupOpened = True }, Cmd.none )
+
+        CloseSetup ->
+            ( { model | setupOpened = False }, Cmd.none )
+
         UpdateStopwatch time ->
             let
                 ( id, oldStopwatch ) =
@@ -308,58 +339,52 @@ update msg model =
                 newStopwatch =
                     { oldStopwatch
                         | time = oldStopwatch.time + 1
-                        , income = updateIncome oldStopwatch.rate oldStopwatch.time oldStopwatch.nbHours oldStopwatch.rateType
+                        , income = updateIncome model.rate oldStopwatch.time model.nbHours model.rateType
                     }
             in
                 ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
 
-        UpdateRate newValue ->
+        UpdateRate newRate ->
             let
                 ( id, oldStopwatch ) =
                     model.stopwatch
 
                 newStopwatch =
                     { oldStopwatch
-                        | rate = String.toFloat newValue |> Result.toMaybe |> Maybe.withDefault 0
-                        , time = 0
+                        | time = 0
                         , income = 0
                     }
             in
-                ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+                ( { model
+                    | rate = String.toFloat newRate |> Result.toMaybe |> Maybe.withDefault 0
+                    , stopwatch = ( id, newStopwatch )
+                  }
+                , Cmd.none
+                )
 
         UpdateRateType newRateType ->
-            let
-                ( id, oldStopwatch ) =
-                    model.stopwatch
-
-                newStopwatch =
-                    { oldStopwatch | rateType = newRateType }
-            in
-                ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+            ( { model | rateType = newRateType }, Cmd.none )
 
         UpdateCurrency newCurrency ->
-            let
-                ( id, oldStopwatch ) =
-                    model.stopwatch
+            ( { model | currency = newCurrency }, Cmd.none )
 
-                newStopwatch =
-                    { oldStopwatch | currency = newCurrency }
-            in
-                ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
-
-        UpdateNbHours newValue ->
+        UpdateNbHours newHours ->
             let
                 ( id, oldStopwatch ) =
                     model.stopwatch
 
                 newStopwatch =
                     { oldStopwatch
-                        | nbHours = String.toFloat newValue |> Result.toMaybe |> Maybe.withDefault 0
-                        , time = 0
+                        | time = 0
                         , income = 0
                     }
             in
-                ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+                ( { model
+                    | nbHours = String.toFloat newHours |> Result.toMaybe |> Maybe.withDefault 0
+                    , stopwatch = ( id, newStopwatch )
+                  }
+                , Cmd.none
+                )
 
         Start ->
             let
@@ -367,7 +392,7 @@ update msg model =
                     model.stopwatch
 
                 rate =
-                    oldStopwatch.rate
+                    model.rate
 
                 newStopwatch =
                     { oldStopwatch

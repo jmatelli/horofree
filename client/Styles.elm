@@ -9,6 +9,8 @@ type CssClasses
     | AddLink
     | OpenList
     | CloseList
+    | OpenSetup
+    | CloseSetup
     | ListStopwatches
     | ListOpened
     | ListClosed
@@ -16,6 +18,7 @@ type CssClasses
     | ListItemDetails
     | RemoveStopwatch
     | Setup
+    | SetupContainer
     | LabelSetup
     | InputText
     | InputHours
@@ -98,7 +101,7 @@ css =
                 [ h1
                     [ margin zero
                     , fontFamilies [ (qt "Pacifico"), .value cursive ]
-                    , fontSize (Css.rem 4)
+                    , fontSize (Css.rem 6)
                     , fontWeight lighter
                     , textAlign center
                     ]
@@ -146,6 +149,34 @@ css =
             , backgroundColor indigo700
             , hover
                 [ backgroundColor indigo900 ]
+            ]
+        , (.) CloseSetup
+            [ fontSize (Css.rem 2)
+            , position absolute
+            , top zero
+            , right zero
+            , height (px 73)
+            , width (px 75)
+            , lineHeight (px 73)
+            , textAlign center
+            , cursor pointer
+            , backgroundColor red700
+            , hover
+                [ backgroundColor red900 ]
+            ]
+        , (.) OpenSetup
+            [ fontSize (Css.rem 2)
+            , position absolute
+            , top zero
+            , right zero
+            , height (px 73)
+            , width (px 75)
+            , lineHeight (px 73)
+            , textAlign center
+            , cursor pointer
+            , backgroundColor teal
+            , hover
+                [ backgroundColor teal900 ]
             ]
         , (.) ListStopwatches
             [ width (px 150)
@@ -209,10 +240,21 @@ css =
             [ left (px -150) ]
         , (.) Setup
             [ textAlign center
-            , width (px 400)
-            , margin2 zero auto
+            , position absolute
+            , top zero
+            , bottom zero
+            , left zero
+            , right zero
+            , backgroundColor (rgba 0 77 64 0.9)
             , descendants
-                [ div
+                [ (.) SetupContainer
+                    [ width (px 400)
+                    , margin2 zero auto
+                    , position relative
+                    , top (pct 50)
+                    , transform (translate2 zero (pct -50))
+                    ]
+                , div
                     [ marginBottom (px 20) ]
                 , (.) LabelSetup
                     [ display block
@@ -264,7 +306,7 @@ css =
             , margin2 (px 50) zero
             ]
         , (.) Income
-            [ fontSize (Css.rem 10)
+            [ fontSize (Css.rem 15)
             , backgroundColor teal
             , margin2 (px 50) zero
             , fontWeight bold
