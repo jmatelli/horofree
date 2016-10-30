@@ -1,7 +1,7 @@
 module Styles exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (body, div, input, h1, a, span)
+import Css.Elements exposing (body, div, input, h1, h2, a, span)
 
 
 type CssClasses
@@ -76,6 +76,16 @@ red900 =
     hex "B71C1C"
 
 
+grey50 : Color
+grey50 =
+    hex "fafafa"
+
+
+grey500 : Color
+grey500 =
+    hex "9e9e9e"
+
+
 grey900 : Color
 grey900 =
     hex "212121"
@@ -87,10 +97,10 @@ css =
         [ body
             [ height (vh 100)
             , backgroundColor teal700
-            , color (hex "ecf0f1")
+            , color grey50
             ]
         , a
-            [ color (hex "ecf0f1") ]
+            [ color grey50 ]
         , (.) Hidden
             [ display none ]
         , (.) Header
@@ -99,11 +109,13 @@ css =
             , position relative
             , children
                 [ h1
-                    [ margin zero
+                    [ margin2 zero auto
                     , fontFamilies [ (qt "Pacifico"), .value cursive ]
                     , fontSize (Css.rem 6)
                     , fontWeight lighter
                     , textAlign center
+                    , position relative
+                    , width (px 400)
                     ]
                 ]
             ]
@@ -160,9 +172,8 @@ css =
             , lineHeight (px 73)
             , textAlign center
             , cursor pointer
-            , backgroundColor red700
             , hover
-                [ backgroundColor red900 ]
+                [ color grey500 ]
             ]
         , (.) OpenSetup
             [ fontSize (Css.rem 2)
@@ -245,7 +256,8 @@ css =
             , bottom zero
             , left zero
             , right zero
-            , backgroundColor (rgba 0 77 64 0.9)
+            , backgroundColor (rgba 0 0 0 0.7)
+              -- , backgroundColor (rgba 0 77 64 0.9)
             , descendants
                 [ (.) SetupContainer
                     [ width (px 400)
@@ -253,6 +265,17 @@ css =
                     , position relative
                     , top (pct 50)
                     , transform (translate2 zero (pct -50))
+                    , children
+                        [ h2
+                            [ margin3 zero auto (px 30)
+                            , fontFamilies [ (qt "Pacifico"), .value cursive ]
+                            , fontSize (Css.rem 4)
+                            , fontWeight lighter
+                            , textAlign center
+                            , position relative
+                            , width (px 400)
+                            ]
+                        ]
                     ]
                 , div
                     [ marginBottom (px 20) ]
@@ -273,7 +296,7 @@ css =
                     [ width (px 400) ]
                 , (.) SpanInput
                     [ backgroundColor teal900
-                    , color (hex "ecf0f1")
+                    , color grey50
                     , fontSize (Css.rem 2)
                     , border zero
                     , borderBottom3 (px 2) solid teal900

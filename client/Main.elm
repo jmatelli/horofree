@@ -108,6 +108,16 @@ type Msg
 
 view : Model -> Html Msg
 view model =
+    main' []
+        [ headerView model
+        , listStopwatchesView model
+        , stopwatchView model
+        , setupView model
+        ]
+
+
+headerView : Model -> Html Msg
+headerView model =
     let
         closeBtnClass =
             if model.listOpened then
@@ -133,18 +143,35 @@ view model =
             else
                 [ Styles.OpenSetup, Hidden ]
     in
-        main' []
-            [ header [ class [ Header ] ]
-                [ a [ class [ AddLink ], style [ ( "z-index", "1000" ) ], onClick AddStopwatch ] [ i [ class [ "fa", "fa-plus" ] ] [] ]
-                , a [ class closeBtnClass, onClick CloseList ] [ i [ class [ "fa", "fa-times" ] ] [] ]
-                , a [ class openBtnClass, onClick OpenList ] [ i [ class [ "fa", "fa-arrow-right" ] ] [] ]
-                , h1 [] [ text "Horofree" ]
-                , a [ class closeSetupBtnClass, style [ ( "z-index", "1020" ) ], onClick CloseSetup ] [ i [ class [ "fa", "fa-times" ] ] [] ]
-                , a [ class openSetupBtnClass, onClick OpenSetup ] [ i [ class [ "fa", "fa-gear" ] ] [] ]
+        header [ class [ Header ] ]
+            [ a
+                [ class [ AddLink ]
+                , style [ ( "z-index", "1000" ) ]
+                , onClick AddStopwatch
                 ]
-            , listStopwatchesView model
-            , stopwatchView model model.stopwatch
-            , setupView model
+                [ i [ class [ "fa", "fa-plus" ] ] [] ]
+            , a
+                [ class closeBtnClass
+                , onClick CloseList
+                ]
+                [ i [ class [ "fa", "fa-times" ] ] [] ]
+            , a
+                [ class openBtnClass
+                , onClick OpenList
+                ]
+                [ i [ class [ "fa", "fa-chevron-right" ] ] [] ]
+            , h1 [ style [ ( "z-index", "1030" ) ] ] [ text "Horofree" ]
+            , a
+                [ class closeSetupBtnClass
+                , style [ ( "z-index", "1020" ) ]
+                , onClick CloseSetup
+                ]
+                [ i [ class [ "fa", "fa-times" ] ] [] ]
+            , a
+                [ class openSetupBtnClass
+                , onClick OpenSetup
+                ]
+                [ i [ class [ "fa", "fa-gear" ] ] [] ]
             ]
 
 
@@ -195,7 +222,8 @@ setupView model =
     in
         div [ class setupClass, style [ ( "z-index", "1010" ) ] ]
             [ div [ class [ SetupContainer ] ]
-                [ div []
+                [ h2 [] [ text "Setup" ]
+                , div []
                     [ label [ class [ LabelSetup ] ] [ text "Your daily/hourly rate" ]
                     , div []
                         [ input [ class [ InputText ], type' "text", onInput UpdateRate ] []
@@ -247,11 +275,11 @@ currencyItem model currency =
     option [ selected (model.currency == currency), value currency ] [ text currency ]
 
 
-stopwatchView : Model -> Stopwatch -> Html Msg
-stopwatchView model stopwatch =
+stopwatchView : Model -> Html Msg
+stopwatchView model =
     let
         ( id, sw ) =
-            stopwatch
+            model.stopwatch
     in
         div []
             [ div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
