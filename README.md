@@ -28,4 +28,5 @@ $ npm run dev
 - [x] Global settings
 - [ ] Add several stopwatches
 - [ ] Use local storage
+- [ ] Use router
 
