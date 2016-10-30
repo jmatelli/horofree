@@ -6,7 +6,10 @@ import Html.Events exposing (..)
 import Html.App
 import Html.CssHelpers exposing (withNamespace)
 import String exposing (..)
-import Array exposing (..)
+
+
+-- import Array exposing (..)
+
 import Time exposing (..)
 import Json.Decode as Json
 import Exts.Float exposing (roundTo)
@@ -32,9 +35,12 @@ type alias Stopwatch =
     )
 
 
-type RateType
-    = PerHours
-    | PerDays
+type alias Setup =
+    { rate : Maybe Float
+    , rateType : RateType
+    , currency : String
+    , nbHours : Maybe Float
+    }
 
 
 type alias Model =
@@ -42,11 +48,17 @@ type alias Model =
     , stopwatches : List Stopwatch
     , listOpened : Bool
     , setupOpened : Bool
-    , rate : Float
-    , rateType : RateType
-    , currency : String
-    , nbHours : Float
+    , setup : Setup
+    , inputRate : String
+    , inputHours : String
+    , inputCurrency : String
+    , inputRateType : RateType
     }
+
+
+type RateType
+    = PerHours
+    | PerDays
 
 
 initialStopwatch : Stopwatch
@@ -61,16 +73,26 @@ initialStopwatch =
     )
 
 
+initialSetup : Setup
+initialSetup =
+    { rate = Nothing
+    , rateType = PerDays
+    , currency = "€"
+    , nbHours = Nothing
+    }
+
+
 initialModel : Model
 initialModel =
     { stopwatch = initialStopwatch
     , stopwatches = [ initialStopwatch ]
     , listOpened = False
     , setupOpened = False
-    , rate = 0
-    , rateType = PerDays
-    , currency = "€"
-    , nbHours = 7
+    , setup = initialSetup
+    , inputRate = ""
+    , inputHours = ""
+    , inputCurrency = "€"
+    , inputRateType = PerDays
     }
 
 
@@ -91,11 +113,13 @@ type Msg
     | CloseList
     | OpenSetup
     | CloseSetup
+    | InputRate String
+    | InputCurrency String
+    | InputRateType RateType
+    | InputHours String
+    | SaveSetup
+    | CancelSetup
     | UpdateStopwatch Time
-    | UpdateRate String
-    | UpdateRateType RateType
-    | UpdateCurrency String
-    | UpdateNbHours String
     | Start
     | Pause
     | Stop
@@ -200,7 +224,7 @@ listItem model stopwatch =
                 , span []
                     [ text (toStopwatch sw.time)
                     , br [] []
-                    , text ((toString (roundTo 2 (sw.income))) ++ model.currency)
+                    , text ((toString (roundTo 2 (sw.income))) ++ model.setup.currency)
                     ]
                 ]
             , a
@@ -216,29 +240,45 @@ setupView model =
     let
         setupClass =
             if model.setupOpened then
-                [ Setup ]
+                [ Styles.Setup ]
             else
-                [ Setup, Hidden ]
+                [ Styles.Setup, Hidden ]
     in
         div [ class setupClass, style [ ( "z-index", "1010" ) ] ]
-            [ div [ class [ SetupContainer ] ]
+            [ Html.form [ class [ SetupContainer ], onSubmit SaveSetup ]
                 [ h2 [] [ text "Setup" ]
                 , div []
                     [ label [ class [ LabelSetup ] ] [ text "Your daily/hourly rate" ]
                     , div []
-                        [ input [ class [ InputText ], type' "text", onInput UpdateRate ] []
+                        [ input
+                            [ class [ InputText ]
+                            , type' "text"
+                            , onInput InputRate
+                            , value model.inputRate
+                            ]
+                            []
                         , selectCurrency model
                         ]
                     ]
                 , div []
                     [ label [ class [ LabelSetup ] ] [ text "Number of hours per day" ]
                     , div []
-                        [ input [ class [ InputText, InputHours ], type' "text", onInput UpdateNbHours, value (toString model.nbHours), placeholder "Number of hours per day" ] []
+                        [ input
+                            [ class [ InputText, Styles.InputHours ]
+                            , type' "text"
+                            , onInput InputHours
+                            , value model.inputHours
+                            ]
+                            []
                         ]
                     ]
                 , div []
-                    [ radio "Per days" PerDays (UpdateRateType PerDays) model
-                    , radio "Per hours" PerHours (UpdateRateType PerHours) model
+                    [ radio "Per days" PerDays (InputRateType PerDays) model
+                    , radio "Per hours" PerHours (InputRateType PerHours) model
+                    ]
+                , div []
+                    [ button [ class [ Styles.SaveSetup ], type' "submit" ] [ text "Save" ]
+                    , button [ class [ Styles.CancelSetup ], onClick CancelSetup ] [ text "Cancel" ]
                     ]
                 ]
             ]
@@ -248,31 +288,31 @@ radio : String -> RateType -> msg -> Model -> Html msg
 radio value rateType msg model =
     let
         labelClass =
-            if model.rateType == rateType then
+            if model.inputRateType == rateType then
                 [ Styles.RateType, RateTypeSelected ]
             else
                 [ Styles.RateType ]
     in
         label [ class labelClass ]
-            [ input [ type' "radio", name "rate-type", onClick msg, checked (model.rateType == rateType) ] []
+            [ input [ type' "radio", name "rate-type", onClick msg, checked (model.inputRateType == rateType) ] []
             , text value
             ]
 
 
 currencies : List String
 currencies =
-    [ "€", "$", "£", "¥", "฿" ]
+    [ "€", "$", "£", "¥" ]
 
 
 selectCurrency : Model -> Html Msg
 selectCurrency model =
-    select [ class [ SpanInput ], on "change" (Json.map UpdateCurrency targetValue) ]
+    select [ class [ SpanInput ], on "change" (Json.map InputCurrency targetValue) ]
         (List.map (currencyItem model) currencies)
 
 
 currencyItem : Model -> String -> Html msg
 currencyItem model currency =
-    option [ selected (model.currency == currency), value currency ] [ text currency ]
+    option [ selected (model.inputCurrency == currency), value currency ] [ text currency ]
 
 
 stopwatchView : Model -> Html Msg
@@ -283,24 +323,24 @@ stopwatchView model =
     in
         div []
             [ div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
-            , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ model.currency) ]
+            , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ model.setup.currency) ]
             , div [ class [ BtnContainer ] ]
                 [ button
-                    [ class [ "btn", "btn-outline", "mx1" ]
+                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
                     , onClick Start
-                    , disabled (model.rate == 0 || sw.hasStarted)
+                    , disabled (model.setup.rate == Nothing || sw.hasStarted)
                     ]
                     [ i [ class [ "fa", "fa-play" ] ] [] ]
                 , button
-                    [ class [ "btn", "btn-outline", "mx1" ]
+                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
                     , onClick Pause
-                    , disabled (model.rate == 0 || sw.hasPaused || not sw.hasStarted)
+                    , disabled (model.setup.rate == Nothing || sw.hasPaused || not sw.hasStarted)
                     ]
                     [ i [ class [ "fa", "fa-pause" ] ] [] ]
                 , button
-                    [ class [ "btn", "btn-outline", "mx1" ]
+                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
                     , onClick Stop
-                    , disabled (model.rate == 0 || sw.hasStopped)
+                    , disabled (model.setup.rate == Nothing || sw.hasStopped)
                     ]
                     [ i [ class [ "fa", "fa-stop" ] ] [] ]
                 ]
@@ -340,9 +380,9 @@ update msg model =
                         a /= i
 
                 newList =
-                    Array.filter (matchingId id) (Array.fromList model.stopwatches)
+                    List.filter (matchingId id) model.stopwatches
             in
-                ( { model | stopwatches = Array.toList newList }, Cmd.none )
+                ( { model | stopwatches = newList }, Cmd.none )
 
         ChangeStopwatch ->
             ( model, Cmd.none )
@@ -359,68 +399,76 @@ update msg model =
         CloseSetup ->
             ( { model | setupOpened = False }, Cmd.none )
 
+        InputRate rate ->
+            ( { model | inputRate = rate }, Cmd.none )
+
+        InputCurrency currency ->
+            ( { model | inputCurrency = currency }, Cmd.none )
+
+        InputRateType rateType ->
+            ( { model | inputRateType = rateType }, Cmd.none )
+
+        InputHours hours ->
+            ( { model | inputHours = hours }, Cmd.none )
+
+        SaveSetup ->
+            let
+                oldSetup =
+                    model.setup
+
+                inputRate =
+                    case String.toFloat model.inputRate of
+                        Ok value ->
+                            if value == 0 then
+                                Nothing
+                            else
+                                Just value
+
+                        Err err ->
+                            Nothing
+
+                inputHours =
+                    case String.toFloat model.inputHours of
+                        Ok value ->
+                            if value == 0 then
+                                Nothing
+                            else
+                                Just value
+
+                        Err err ->
+                            Nothing
+
+                newSetup =
+                    { oldSetup | rate = inputRate, currency = model.inputCurrency, rateType = model.inputRateType, nbHours = inputHours }
+            in
+                ( { model | setup = newSetup, setupOpened = False }, Cmd.none )
+
+        CancelSetup ->
+            ( { model | inputRate = "", inputCurrency = "€", inputRateType = PerDays, inputHours = "" }, Cmd.none )
+
         UpdateStopwatch time ->
             let
                 ( id, oldStopwatch ) =
                     model.stopwatch
 
+                newTime =
+                    oldStopwatch.time + 1
+
+                newIncome =
+                    updateIncome model.setup.rate newTime model.setup.nbHours model.setup.rateType
+
                 newStopwatch =
                     { oldStopwatch
-                        | time = oldStopwatch.time + 1
-                        , income = updateIncome model.rate oldStopwatch.time model.nbHours model.rateType
+                        | time = newTime
+                        , income = newIncome
                     }
             in
                 ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
-
-        UpdateRate newRate ->
-            let
-                ( id, oldStopwatch ) =
-                    model.stopwatch
-
-                newStopwatch =
-                    { oldStopwatch
-                        | time = 0
-                        , income = 0
-                    }
-            in
-                ( { model
-                    | rate = String.toFloat newRate |> Result.toMaybe |> Maybe.withDefault 0
-                    , stopwatch = ( id, newStopwatch )
-                  }
-                , Cmd.none
-                )
-
-        UpdateRateType newRateType ->
-            ( { model | rateType = newRateType }, Cmd.none )
-
-        UpdateCurrency newCurrency ->
-            ( { model | currency = newCurrency }, Cmd.none )
-
-        UpdateNbHours newHours ->
-            let
-                ( id, oldStopwatch ) =
-                    model.stopwatch
-
-                newStopwatch =
-                    { oldStopwatch
-                        | time = 0
-                        , income = 0
-                    }
-            in
-                ( { model
-                    | nbHours = String.toFloat newHours |> Result.toMaybe |> Maybe.withDefault 0
-                    , stopwatch = ( id, newStopwatch )
-                  }
-                , Cmd.none
-                )
 
         Start ->
             let
                 ( id, oldStopwatch ) =
                     model.stopwatch
-
-                rate =
-                    model.rate
 
                 newStopwatch =
                     { oldStopwatch
@@ -429,10 +477,12 @@ update msg model =
                         , hasStopped = False
                     }
             in
-                if rate /= 0 then
-                    ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
-                else
-                    ( model, Cmd.none )
+                case model.setup.rate of
+                    Just value ->
+                        ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+
+                    Nothing ->
+                        ( model, Cmd.none )
 
         Pause ->
             let
@@ -488,12 +538,22 @@ subscriptions model =
 -- Functions
 
 
-updateIncome : Float -> Float -> Float -> RateType -> Float
+updateIncome : Maybe Float -> Float -> Maybe Float -> RateType -> Float
 updateIncome rate time nbHours rateType =
-    if rateType == PerDays then
-        (rate / nbHours) / 3600 * time
-    else
-        rate / 3600 * time
+    case rate of
+        Just rateVal ->
+            case nbHours of
+                Just nbHoursVal ->
+                    if rateType == PerDays then
+                        (rateVal / nbHoursVal) / 3600 * time
+                    else
+                        rateVal / 3600 * time
+
+                Nothing ->
+                    0
+
+        Nothing ->
+            0
 
 
 toStopwatch : Float -> String

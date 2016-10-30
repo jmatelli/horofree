@@ -25,6 +25,8 @@ type CssClasses
     | SpanInput
     | RateType
     | RateTypeSelected
+    | SaveSetup
+    | CancelSetup
     | Stopwatch
     | Income
     | BtnContainer
@@ -320,6 +322,24 @@ css =
                     ]
                 , (.) RateTypeSelected
                     [ backgroundColor indigo ]
+                , (.) SaveSetup
+                    [ backgroundColor indigo700
+                    , color grey50
+                    , border zero
+                    , padding2 (px 10) (px 20)
+                    , margin (px 20)
+                    , hover
+                        [ backgroundColor indigo900 ]
+                    ]
+                , (.) CancelSetup
+                    [ backgroundColor red700
+                    , color grey50
+                    , border zero
+                    , padding2 (px 10) (px 20)
+                    , margin (px 20)
+                    , hover
+                        [ backgroundColor red900 ]
+                    ]
                 ]
             ]
         , (.) Stopwatch
