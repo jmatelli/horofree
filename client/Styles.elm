@@ -308,6 +308,7 @@ css =
                     , width (px 75)
                     , textAlign center
                     , display inlineBlock
+                    , padding2 zero (px 10)
                     ]
                 , (.) RateType
                     [ backgroundColor indigo700
