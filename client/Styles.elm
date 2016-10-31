@@ -258,8 +258,9 @@ css =
             , bottom zero
             , left zero
             , right zero
+            , height (pct 100)
+            , width (pct 100)
             , backgroundColor (rgba 0 0 0 0.7)
-              -- , backgroundColor (rgba 0 77 64 0.9)
             , descendants
                 [ (.) SetupContainer
                     [ width (px 400)
