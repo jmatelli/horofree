@@ -243,6 +243,12 @@ setupView model =
                 [ Styles.Setup ]
             else
                 [ Styles.Setup, Hidden ]
+
+        inputHoursClass =
+            if model.inputRateType == PerHours then
+                [ Hidden ]
+            else
+                []
     in
         div [ class setupClass, style [ ( "z-index", "1010" ) ] ]
             [ Html.form [ class [ SetupContainer ], onSubmit SaveSetup ]
@@ -260,7 +266,7 @@ setupView model =
                         , selectCurrency model
                         ]
                     ]
-                , div []
+                , div [ class inputHoursClass ]
                     [ label [ class [ LabelSetup ] ] [ text "Number of hours per day" ]
                     , div []
                         [ input
@@ -430,7 +436,7 @@ update msg model =
                 inputHours =
                     case String.toFloat model.inputHours of
                         Ok value ->
-                            if value == 0 then
+                            if value == 0 || model.inputRateType == PerHours then
                                 Nothing
                             else
                                 Just value
@@ -544,13 +550,10 @@ updateIncome rate time nbHours rateType =
         Just rateVal ->
             case nbHours of
                 Just nbHoursVal ->
-                    if rateType == PerDays then
-                        (rateVal / nbHoursVal) / 3600 * time
-                    else
-                        rateVal / 3600 * time
+                    (rateVal / nbHoursVal) / 3600 * time
 
                 Nothing ->
-                    0
+                    rateVal / 3600 * time
 
         Nothing ->
             0
