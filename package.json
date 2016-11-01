@@ -22,6 +22,7 @@
     "postinstall": "elm-package install -y && elm-css -o client/ client/Stylesheets.elm",
     "build": "webpack",
     "watch": "webpack --watch",
+    "predev": "elm-css -o client/ client/Stylesheets.elm",
     "dev": "webpack-dev-server --port 3000"
   },
   "author": "",
