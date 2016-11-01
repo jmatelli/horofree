@@ -30,6 +30,11 @@ type CssClasses
     | Stopwatch
     | Income
     | BtnContainer
+    | BtnSave
+    | BtnControl
+    | BtnPlay
+    | BtnPause
+    | BtnStop
     | Hidden
 
 
@@ -205,13 +210,14 @@ css =
                 [ (.) ListItem
                     [ margin (px 10)
                     , position relative
+                    , height (px 75)
                     , descendants
                         [ (.) ListItemDetails
                             [ displayFlex
                             , backgroundColor teal900
                             , textAlign center
                             , padding (px 10)
-                            , cursor pointer
+                            , height (px 75)
                             , hover
                                 [ backgroundColor teal700 ]
                             , descendants
@@ -225,17 +231,25 @@ css =
                             ]
                         , (.) RemoveStopwatch
                             [ display none
-                            , backgroundColor red700
-                            , width (px 30)
+                            , backgroundColor (rgba 0 0 0 0.7)
                             , position absolute
+                            , left zero
                             , right zero
                             , top zero
                             , bottom zero
                             , textAlign center
                             , alignItems center
-                            , cursor pointer
-                            , hover
-                                [ backgroundColor red900 ]
+                            , descendants
+                                [ a
+                                    [ display inlineBlock
+                                    , width (pct 50)
+                                    , height (px 75)
+                                    , lineHeight (px 75)
+                                    , cursor pointer
+                                    , hover
+                                        [ backgroundColor (rgba 255 255 255 0.3) ]
+                                    ]
+                                ]
                             ]
                         ]
                     , hover
@@ -260,7 +274,7 @@ css =
             , right zero
             , height (pct 100)
             , width (pct 100)
-            , backgroundColor (rgba 0 0 0 0.7)
+            , backgroundColor (rgba 0 0 0 0.8)
             , descendants
                 [ (.) SetupContainer
                     [ width (px 400)
@@ -359,5 +373,38 @@ css =
             , textAlign center
             ]
         , (.) BtnContainer
-            [ textAlign center ]
+            [ textAlign center
+            , margin (px 20)
+            , descendants
+                [ (.) BtnSave
+                    [ backgroundColor red700
+                    , padding2 (px 10) (px 20)
+                    , border zero
+                    , color grey50
+                    , fontSize (Css.rem 1.5)
+                    , hover
+                        [ backgroundColor red900 ]
+                    , disabled
+                        [ opacity (num 0.5)
+                        , hover
+                            [ backgroundColor red700 ]
+                        ]
+                    ]
+                , (.) BtnControl
+                    [ padding2 (px 10) (px 20)
+                    , border3 (px 1) solid grey50
+                    , color grey50
+                    , backgroundColor transparent
+                    , fontSize (Css.rem 1.5)
+                    , margin (px 10)
+                    , hover
+                        [ backgroundColor (rgba 0 0 0 0.3) ]
+                    , disabled
+                        [ opacity (num 0.5)
+                        , hover
+                            [ backgroundColor transparent ]
+                        ]
+                    ]
+                ]
+            ]
         ]
