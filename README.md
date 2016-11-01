@@ -32,7 +32,10 @@ $ npm run css
 - [x] Round income to 2 decimals
 - [x] Use elm-css
 - [x] Global settings
-- [ ] Add several stopwatches
+- [x] Add several stopwatches
 - [ ] Use local storage
 - [ ] Use router
-
+- [ ] Organize the application in separate modules
+- [ ] Checkpoints
+- [ ] Give a name to a stopwatch
+- [ ] Give a description to a stopwatch
