@@ -22,6 +22,12 @@ Answer yes when prompt by `elm-package`
 $ npm run dev
 ```
 
+If you change anything in the file Stylesheets.elm you have to run the CSS script to build it:
+
+```bash
+$ npm run css
+```
+
 ## Roadmap
 - [x] Round income to 2 decimals
 - [x] Use elm-css
