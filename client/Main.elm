@@ -6,10 +6,8 @@ import Html.Events exposing (..)
 import Html.App
 import Html.CssHelpers exposing (withNamespace)
 import String exposing (..)
-
-
--- import Array exposing (..)
-
+import Array exposing (..)
+import Dict exposing (..)
 import Time exposing (..)
 import Json.Decode as Json
 import Exts.Float exposing (roundTo)
@@ -85,7 +83,7 @@ initialSetup =
 initialModel : Model
 initialModel =
     { stopwatch = initialStopwatch
-    , stopwatches = [ initialStopwatch ]
+    , stopwatches = []
     , listOpened = False
     , setupOpened = False
     , setup = initialSetup
@@ -108,7 +106,7 @@ init =
 type Msg
     = AddStopwatch
     | RemoveStopwatch Int
-    | ChangeStopwatch
+    | ChangeStopwatch Int
     | OpenList
     | CloseList
     | OpenSetup
@@ -123,6 +121,7 @@ type Msg
     | Start
     | Pause
     | Stop
+    | SaveStopwatch
     | NoOp
 
 
@@ -208,8 +207,10 @@ listStopwatchesView model =
             else
                 [ ListStopwatches, ListClosed ]
     in
-        div [ class listClass ]
-            (List.map (listItem model) model.stopwatches)
+        model.stopwatches
+            |> List.sortBy (\( n, s ) -> n)
+            |> List.map (listItem model)
+            |> div [ class listClass ]
 
 
 listItem : Model -> Stopwatch -> Html Msg
@@ -227,11 +228,14 @@ listItem model stopwatch =
                     , text ((toString (roundTo 2 (sw.income))) ++ model.setup.currency)
                     ]
                 ]
-            , a
+            , div
                 [ class [ Styles.RemoveStopwatch ]
-                , onClick (RemoveStopwatch id)
                 ]
-                [ i [ class [ "fa", "fa-times" ], style [ ( "width", "100%" ) ] ] [] ]
+                [ a [ onClick (RemoveStopwatch id) ]
+                    [ i [ class [ "fa", "fa-times" ] ] [] ]
+                , a [ onClick (ChangeStopwatch id) ]
+                    [ i [ class [ "fa", "fa-chevron-right" ] ] [] ]
+                ]
             ]
 
 
@@ -332,23 +336,31 @@ stopwatchView model =
             , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ model.setup.currency) ]
             , div [ class [ BtnContainer ] ]
                 [ button
-                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
+                    [ class [ BtnControl ]
                     , onClick Start
                     , disabled (model.setup.rate == Nothing || sw.hasStarted)
                     ]
                     [ i [ class [ "fa", "fa-play" ] ] [] ]
                 , button
-                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
+                    [ class [ BtnControl ]
                     , onClick Pause
                     , disabled (model.setup.rate == Nothing || sw.hasPaused || not sw.hasStarted)
                     ]
                     [ i [ class [ "fa", "fa-pause" ] ] [] ]
                 , button
-                    [ class [ "btn", "btn-big", "btn-outline", "mx2", "not-rounded" ]
+                    [ class [ BtnControl ]
                     , onClick Stop
                     , disabled (model.setup.rate == Nothing || sw.hasStopped)
                     ]
                     [ i [ class [ "fa", "fa-stop" ] ] [] ]
+                ]
+            , div [ class [ BtnContainer ] ]
+                [ button
+                    [ class [ BtnSave ]
+                    , onClick SaveStopwatch
+                    , disabled (not sw.hasPaused || sw.time == 0)
+                    ]
+                    [ text "save" ]
                 ]
             ]
 
@@ -367,10 +379,12 @@ update msg model =
 
                 newId =
                     id + 1
+
+                ( initId, initSw ) =
+                    initialStopwatch
             in
                 ( { model
-                    | stopwatch = ( newId, oldStopwatch )
-                    , stopwatches = List.append model.stopwatches [ ( newId, oldStopwatch ) ]
+                    | stopwatch = ( newId, initSw )
                     , listOpened = True
                   }
                 , Cmd.none
@@ -390,8 +404,26 @@ update msg model =
             in
                 ( { model | stopwatches = newList }, Cmd.none )
 
-        ChangeStopwatch ->
-            ( model, Cmd.none )
+        ChangeStopwatch id ->
+            let
+                ( initId, initSw ) =
+                    initialStopwatch
+
+                matchingId a x =
+                    let
+                        ( i, sw ) =
+                            x
+                    in
+                        a == i
+
+                newSw =
+                    model.stopwatches
+                        |> List.filter (matchingId id)
+                        |> Array.fromList
+                        |> Array.get 0
+                        |> Maybe.withDefault ( 0, initSw )
+            in
+                ( { model | stopwatch = newSw }, Cmd.none )
 
         OpenList ->
             ( { model | listOpened = True }, Cmd.none )
@@ -519,6 +551,19 @@ update msg model =
                     }
             in
                 ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+
+        SaveStopwatch ->
+            let
+                ( newId, newSw ) =
+                    model.stopwatch
+
+                newList =
+                    if Dict.member newId (Dict.fromList model.stopwatches) then
+                        Dict.toList (Dict.insert newId newSw (Dict.fromList model.stopwatches))
+                    else
+                        model.stopwatch :: model.stopwatches
+            in
+                ( { model | stopwatches = newList, listOpened = True }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
