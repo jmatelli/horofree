@@ -334,7 +334,7 @@ stopwatchView model =
     in
         div []
             [ div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
-            , div [ class [ Income ] ] [ text ((formatCurrency (roundTo 2 (sw.income)) model) ++ model.setup.currency) ]
+            , div [ class [ Income ] ] [ text (formatCurrency (roundTo 2 (sw.income)) model) ]
             , div [ class [ BtnContainer ] ]
                 [ button
                     [ class [ BtnControl ]
@@ -641,6 +641,33 @@ toStopwatch time =
 formatCurrency : Float -> Model -> String
 formatCurrency income model =
     let
+        str =
+            toString income
+
+        decimals =
+            String.split "." str
+                |> Array.fromList
+                |> Array.get 1
+                |> Maybe.withDefault "0"
+                |> (\n ->
+                        case String.toInt n of
+                            Ok i ->
+                                if (i % 10) == 0 then
+                                    n ++ "0"
+                                else
+                                    n
+
+                            Err err ->
+                                n
+                   )
+
+        beforeDecimal =
+            String.split "." str
+                |> Array.fromList
+                |> Array.get 0
+                |> Maybe.withDefault "0"
+                |> Regex.split All (regex "(?=(?:...)*$)")
+
         formatedIncome =
             case model.setup.currency of
                 "€" ->
@@ -651,36 +678,27 @@ formatCurrency income model =
                         decimal =
                             ","
 
-                        str =
-                            toString income
-
-                        decimals =
-                            String.split "." str
-                                |> Array.fromList
-                                |> Array.get 1
-                                |> Maybe.withDefault "0"
-                                |> (\n ->
-                                        case String.toInt n of
-                                            Ok i ->
-                                                if (i % 10) == 0 then
-                                                    n ++ "0"
-                                                else
-                                                    n
-
-                                            Err err ->
-                                                n
-                                   )
-
-                        beforeDecimal =
-                            String.split "." str
-                                |> Array.fromList
-                                |> Array.get 0
-                                |> Maybe.withDefault "0"
-                                |> Regex.split All (regex "(?=(?:...)*$)")
+                        income' =
+                            beforeDecimal
                                 |> String.join delimiter
                     in
-                        [ beforeDecimal, decimals ]
-                            |> String.join decimal
+                        [ (String.join decimal [ income', decimals ]), model.setup.currency ]
+                            |> String.join ""
+
+                "$" ->
+                    let
+                        delimiter =
+                            ","
+
+                        decimal =
+                            "."
+
+                        income' =
+                            beforeDecimal
+                                |> String.join delimiter
+                    in
+                        [ model.setup.currency, (String.join decimal [ income', decimals ]) ]
+                            |> String.join ""
 
                 _ ->
                     toString income
