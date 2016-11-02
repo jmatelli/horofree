@@ -8,6 +8,7 @@ import Html.CssHelpers exposing (withNamespace)
 import String exposing (..)
 import Array exposing (..)
 import Dict exposing (..)
+import Regex exposing (..)
 import Time exposing (..)
 import Json.Decode as Json
 import Exts.Float exposing (roundTo)
@@ -333,7 +334,7 @@ stopwatchView model =
     in
         div []
             [ div [ class [ Styles.Stopwatch ] ] [ text (toStopwatch sw.time) ]
-            , div [ class [ Income ] ] [ text ((toString (roundTo 2 (sw.income))) ++ model.setup.currency) ]
+            , div [ class [ Income ] ] [ text ((formatCurrency (roundTo 2 (sw.income)) model) ++ model.setup.currency) ]
             , div [ class [ BtnContainer ] ]
                 [ button
                     [ class [ BtnControl ]
@@ -635,6 +636,56 @@ toStopwatch time =
             toString hours
     in
         toStrHours ++ "h" ++ toStrMinutes ++ "m" ++ toStrSeconds ++ "s"
+
+
+formatCurrency : Float -> Model -> String
+formatCurrency income model =
+    let
+        formatedIncome =
+            case model.setup.currency of
+                "€" ->
+                    let
+                        delimiter =
+                            " "
+
+                        decimal =
+                            ","
+
+                        str =
+                            toString income
+
+                        decimals =
+                            String.split "." str
+                                |> Array.fromList
+                                |> Array.get 1
+                                |> Maybe.withDefault "0"
+                                |> (\n ->
+                                        case String.toInt n of
+                                            Ok i ->
+                                                if (i % 10) == 0 then
+                                                    n ++ "0"
+                                                else
+                                                    n
+
+                                            Err err ->
+                                                n
+                                   )
+
+                        beforeDecimal =
+                            String.split "." str
+                                |> Array.fromList
+                                |> Array.get 0
+                                |> Maybe.withDefault "0"
+                                |> Regex.split All (regex "(?=(?:...)*$)")
+                                |> String.join delimiter
+                    in
+                        [ beforeDecimal, decimals ]
+                            |> String.join decimal
+
+                _ ->
+                    toString income
+    in
+        formatedIncome
 
 
 
