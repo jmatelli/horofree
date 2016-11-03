@@ -685,38 +685,20 @@ formatCurrency income model =
                         [ (String.join decimal [ income', decimals ]), model.setup.currency ]
                             |> String.join ""
 
-                "$" ->
-                    let
-                        delimiter =
-                            ","
-
-                        decimal =
-                            "."
-
-                        income' =
-                            beforeDecimal
-                                |> String.join delimiter
-                    in
-                        [ model.setup.currency, (String.join decimal [ income', decimals ]) ]
-                            |> String.join ""
-
-                "£" ->
-                    let
-                        delimiter =
-                            ","
-
-                        decimal =
-                            "."
-
-                        income' =
-                            beforeDecimal
-                                |> String.join delimiter
-                    in
-                        [ model.setup.currency, (String.join decimal [ income', decimals ]) ]
-                            |> String.join ""
-
                 _ ->
-                    toString income
+                    let
+                        delimiter =
+                            ","
+
+                        decimal =
+                            "."
+
+                        income' =
+                            beforeDecimal
+                                |> String.join delimiter
+                    in
+                        [ model.setup.currency, (String.join decimal [ income', decimals ]) ]
+                            |> String.join ""
     in
         formatedIncome
 
