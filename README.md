@@ -33,10 +33,11 @@ $ npm run css
 - [x] Use elm-css
 - [x] Global settings
 - [x] Add several stopwatches
-- [ ] Format income for different currency
+- [x] Format income for different currency
 - [ ] Use local storage
 - [ ] Use router
 - [ ] Organize the application in separate modules
 - [ ] Checkpoints
 - [ ] Give a name to a stopwatch
 - [ ] Give a description to a stopwatch
+- [ ] Write tests
