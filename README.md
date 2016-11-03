@@ -40,3 +40,4 @@ $ npm run css
 - [ ] Checkpoints
 - [ ] Give a name to a stopwatch
 - [ ] Give a description to a stopwatch
+- [ ] Write tests
