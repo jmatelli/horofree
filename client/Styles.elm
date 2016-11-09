@@ -30,44 +30,9 @@ teal900 =
     hex "004D40"
 
 
-indigo : Color
-indigo =
-    hex "3F51B5"
-
-
-indigo700 : Color
-indigo700 =
-    hex "303F9F"
-
-
-indigo900 : Color
-indigo900 =
-    hex "1A237E"
-
-
-red500 : Color
-red500 =
-    hex "F44336"
-
-
-red700 : Color
-red700 =
-    hex "D32F2F"
-
-
-red900 : Color
-red900 =
-    hex "B71C1C"
-
-
 grey50 : Color
 grey50 =
     hex "fafafa"
-
-
-grey500 : Color
-grey500 =
-    hex "9e9e9e"
 
 
 grey900 : Color

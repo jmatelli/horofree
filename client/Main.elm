@@ -12,6 +12,19 @@ import Styles exposing (..)
 
 
 -- MODEL
+
+
+rate : Float
+rate =
+    450
+
+
+nbHours : Float
+nbHours =
+    7
+
+
+
 -- MESSAGES
 -- VIEW
 -- UPDATE
