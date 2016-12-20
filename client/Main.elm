@@ -3,7 +3,6 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App
 import Html.CssHelpers exposing (withNamespace)
 import String exposing (..)
 import Array exposing (..)
@@ -132,7 +131,7 @@ type Msg
 
 view : Model -> Html Msg
 view model =
-    main' []
+    main_ []
         [ headerView model
         , listStopwatchesView model
         , stopwatchView model
@@ -263,7 +262,7 @@ setupView model =
                     , div []
                         [ input
                             [ class [ InputText ]
-                            , type' "text"
+                            , type_ "text"
                             , onInput InputRate
                             , value model.inputRate
                             ]
@@ -276,7 +275,7 @@ setupView model =
                     , div []
                         [ input
                             [ class [ InputText, Styles.InputHours ]
-                            , type' "text"
+                            , type_ "text"
                             , onInput InputHours
                             , value model.inputHours
                             ]
@@ -288,7 +287,7 @@ setupView model =
                     , radio "Per hours" PerHours (InputRateType PerHours) model
                     ]
                 , div []
-                    [ button [ class [ Styles.SaveSetup ], type' "submit" ] [ text "Save" ]
+                    [ button [ class [ Styles.SaveSetup ], type_ "submit" ] [ text "Save" ]
                     , button [ class [ Styles.CancelSetup ], onClick CancelSetup ] [ text "Cancel" ]
                     ]
                 ]
@@ -305,7 +304,7 @@ radio value rateType msg model =
                 [ Styles.RateType ]
     in
         label [ class labelClass ]
-            [ input [ type' "radio", name "rate-type", onClick msg, checked (model.inputRateType == rateType) ] []
+            [ input [ type_ "radio", name "rate-type", onClick msg, checked (model.inputRateType == rateType) ] []
             , text value
             ]
 
@@ -678,11 +677,11 @@ formatCurrency income model =
                         decimal =
                             ","
 
-                        income' =
+                        income_ =
                             beforeDecimal
                                 |> String.join delimiter
                     in
-                        [ (String.join decimal [ income', decimals ]), model.setup.currency ]
+                        [ (String.join decimal [ income_, decimals ]), model.setup.currency ]
                             |> String.join ""
 
                 _ ->
@@ -693,11 +692,11 @@ formatCurrency income model =
                         decimal =
                             "."
 
-                        income' =
+                        income_ =
                             beforeDecimal
                                 |> String.join delimiter
                     in
-                        [ model.setup.currency, (String.join decimal [ income', decimals ]) ]
+                        [ model.setup.currency, (String.join decimal [ income_, decimals ]) ]
                             |> String.join ""
     in
         formatedIncome
@@ -707,9 +706,9 @@ formatCurrency income model =
 -- Main
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    Html.App.program
+    Html.program
         { init = init
         , view = view
         , update = update
