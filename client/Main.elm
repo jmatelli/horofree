@@ -22,6 +22,13 @@ import Styles exposing (..)
 -- Model
 
 
+type alias Lap =
+    { name : Maybe String
+    , time : Float
+    , income : Float
+    }
+
+
 type alias Stopwatch =
     ( Int
     , { time : Float
@@ -29,6 +36,7 @@ type alias Stopwatch =
       , hasStarted : Bool
       , hasPaused : Bool
       , hasStopped : Bool
+      , laps : List Lap
       }
     )
 
@@ -67,6 +75,7 @@ initialStopwatch =
       , hasStarted = False
       , hasPaused = False
       , hasStopped = True
+      , laps = []
       }
     )
 
@@ -121,6 +130,7 @@ type Msg
     | Start
     | Pause
     | Stop
+    | SaveLap
     | SaveStopwatch
     | NoOp
 
@@ -177,12 +187,22 @@ headerView model =
                 [ class closeBtnClass
                 , onClick CloseList
                 ]
-                [ i [ class [ "fa", "fa-times" ] ] [] ]
+                [ model.stopwatches
+                    |> List.length
+                    |> toString
+                    |> text
+                , i [ class [ "fa", "fa-times" ] ] []
+                ]
             , a
                 [ class openBtnClass
                 , onClick OpenList
                 ]
-                [ i [ class [ "fa", "fa-chevron-right" ] ] [] ]
+                [ model.stopwatches
+                    |> List.length
+                    |> toString
+                    |> text
+                , i [ class [ "fa", "fa-chevron-right" ] ] []
+                ]
             , h1 [ style [ ( "z-index", "1030" ) ] ] [ text "Horofree" ]
             , a
                 [ class closeSetupBtnClass
@@ -353,6 +373,12 @@ stopwatchView model =
                     , disabled (model.setup.rate == Nothing || sw.hasStopped)
                     ]
                     [ i [ class [ "fa", "fa-stop" ] ] [] ]
+                , button
+                    [ class [ BtnControl ]
+                    , onClick SaveLap
+                    , disabled (model.setup.rate == Nothing || sw.hasStopped)
+                    ]
+                    [ i [ class [ "fa", "fa-history" ] ] [] ]
                 ]
             , div [ class [ BtnContainer ] ]
                 [ button
@@ -362,6 +388,27 @@ stopwatchView model =
                     ]
                     [ text "save" ]
                 ]
+            , sw.laps
+                |> List.map (itemLap model)
+                |> div [ class [ ListLap ] ]
+            ]
+
+
+itemLap : Model -> Lap -> Html Msg
+itemLap model lap =
+    let
+        name =
+            case lap.name of
+                Just name ->
+                    name
+
+                Nothing ->
+                    "Bugger!"
+    in
+        div [ class [ ItemLap ] ]
+            [ div [] [ text name ]
+            , div [] [ text (toStopwatch lap.time) ]
+            , div [] [ text (formatCurrency (roundTo 2 (lap.income)) model) ]
             ]
 
 
@@ -548,7 +595,24 @@ update msg model =
                         , hasStarted = False
                         , hasPaused = False
                         , hasStopped = True
+                        , laps = []
                     }
+            in
+                ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
+
+        SaveLap ->
+            let
+                ( id, oldStopwatch ) =
+                    model.stopwatch
+
+                newLap =
+                    { name = Nothing
+                    , time = oldStopwatch.time
+                    , income = oldStopwatch.income
+                    }
+
+                newStopwatch =
+                    { oldStopwatch | laps = newLap :: oldStopwatch.laps }
             in
                 ( { model | stopwatch = ( id, newStopwatch ) }, Cmd.none )
 

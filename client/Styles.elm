@@ -1,7 +1,7 @@
 module Styles exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (body, div, input, h1, h2, a, span)
+import Css.Elements exposing (body, div, input, h1, h2, a, span, i)
 
 
 type CssClasses
@@ -35,6 +35,8 @@ type CssClasses
     | BtnPlay
     | BtnPause
     | BtnStop
+    | ListLap
+    | ItemLap
     | Hidden
 
 
@@ -147,13 +149,17 @@ css =
             , top zero
             , left (px 150)
             , height (px 73)
-            , width (px 75)
+            , width (px 100)
             , lineHeight (px 73)
             , textAlign center
             , cursor pointer
             , backgroundColor red700
             , hover
                 [ backgroundColor red900 ]
+            , descendants
+                [ i
+                    [ marginLeft (px 10) ]
+                ]
             ]
         , (.) OpenList
             [ fontSize (Css.rem 2)
@@ -161,7 +167,7 @@ css =
             , top zero
             , left (px 150)
             , height (px 73)
-            , width (px 75)
+            , width (px 100)
             , lineHeight (px 73)
             , textAlign center
             , cursor pointer
@@ -404,6 +410,23 @@ css =
                         , hover
                             [ backgroundColor transparent ]
                         ]
+                    ]
+                ]
+            ]
+        , (.) ListLap
+            [ width (px 1200)
+            , margin2 zero auto
+            ]
+        , (.) ItemLap
+            [ display block
+            , backgroundColor grey50
+            , margin2 (px 20) zero
+            , color grey900
+            , boxShadow4 zero (px 2) (px 5) (rgba 0 0 0 0.35)
+            , descendants
+                [ div
+                    [ display inlineBlock
+                    , padding2 (px 10) (px 20)
                     ]
                 ]
             ]
